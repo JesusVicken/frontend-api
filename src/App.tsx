@@ -1,7 +1,50 @@
+import { useEffect, useState, useRef, FormEvent } from "react"
 import { FiTrash } from "react-icons/fi"
+import { api } from "./services/api"
 
+interface CustomerProps {
+  id: string;
+  name: string;
+  email: string;
+  status: boolean;
+  created_at: string;
+}
 
 function App() {
+
+  const [customers, setCustomers] = useState<CustomerProps[]>([]);
+  const nameRef = useRef<HTMLInputElement | null>(null)
+  const emailRef = useRef<HTMLInputElement | null>(null)
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+
+    if (!nameRef.current?.value || !emailRef.current?.value) return;
+
+    const response = await api.post("/customer", {
+      name: nameRef.current.value,
+      email: emailRef.current.value,
+    });
+    console.log(response.data);
+
+    // Limpa os campos do formulário
+    if (nameRef.current) nameRef.current.value = "";
+    if (emailRef.current) emailRef.current.value = "";
+
+
+  }
+
+
+
+  useEffect(() => {
+    loadCustomers()
+
+  }, [])
+
+  async function loadCustomers() {
+    const response = await api.get("/customers")
+    setCustomers(response.data)
+  }
 
 
   return (
@@ -10,12 +53,13 @@ function App() {
         <h1 className="text-4xl font-medium text-white">Clientes</h1>
 
 
-        <form className="flex flex-col my-6">
+        <form className="flex flex-col my-6" onSubmit={handleSubmit}>
           <label className="font-medium text-white">Nome:</label>
           <input
             type="text"
             placeholder="Digite seu nome completo..."
             className="w-full mb-5 p-2 rounded bg-white text-black"
+            ref={nameRef}
           />
 
           <label className="font-medium text-white">E-mail:</label>
@@ -23,6 +67,8 @@ function App() {
             type="email"
             placeholder="Digite seu e-mail..."
             className="w-full mb-5 p-2 rounded bg-white text-black"
+            ref={emailRef}
+
           />
 
           <input
@@ -36,19 +82,21 @@ function App() {
 
         {/*Listagem de clientes*/}
 
-        <section className="flex flex-col ">
+        <section className="flex flex-col gap-4">
 
-          <article className="w-full p-2 bg-white rounded relative hover:scale-105 duration-200">
+          {customers.map((customer) => (
+            <article key={customer.id} className="w-full p-2 bg-white rounded relative hover:scale-105 duration-200">
 
-            <p><span className="font-medium">Nome:</span> Jesus Vicken</p>
-            <p><span className="font-medium">Email:</span> teste@teste.com.br</p>
-            <p><span className="font-medium">Status:</span> ATIVO</p>
+              <p><span className="font-medium">Nome:</span> {customer.name}</p>
+              <p><span className="font-medium">Email:</span> {customer.email}</p>
+              <p><span className="font-medium">Status:</span> {customer.status ? "ATIVO" : "INATIVO"}</p>
 
-            <button className="bg-red-500 w-7 h-7 flex items-center justify-center rounded-lg absolute right-0 -top-2">
-              <FiTrash size={18} color="#FFF" />
-            </button>
+              <button className="bg-red-500 w-7 h-7 flex items-center justify-center rounded-lg absolute right-0 -top-2">
+                <FiTrash size={18} color="#FFF" />
+              </button>
 
-          </article>
+            </article>
+          ))}
 
         </section>
 
