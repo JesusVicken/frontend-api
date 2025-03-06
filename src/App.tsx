@@ -48,6 +48,24 @@ function App() {
     setCustomers(response.data)
   }
 
+  async function handleDelete(id: string) {
+    try {
+      await api.delete("/customers", {
+        params: {
+          id: id,
+        }
+      })
+
+
+      const allCustomers = customers.filter((customer) => customer.id !== id)
+      setCustomers(allCustomers)
+    } catch (error) {
+      console.log("error")
+
+    }
+  }
+
+
 
   return (
     <div className="w-full min-h-screen bg-gray-900 flex justify-center px-4">
@@ -93,7 +111,11 @@ function App() {
               <p><span className="font-medium">Email:</span> {customer.email}</p>
               <p><span className="font-medium">Status:</span> {customer.status ? "ATIVO" : "INATIVO"}</p>
 
-              <button className="bg-red-500 w-7 h-7 flex items-center justify-center rounded-lg absolute right-0 -top-2">
+              <button
+                onClick={() => {
+                  handleDelete(customer.id)
+                }}
+                className="bg-red-500 w-7 h-7 flex items-center justify-center rounded-lg absolute right-0 -top-2">
                 <FiTrash size={18} color="#FFF" />
               </button>
 
